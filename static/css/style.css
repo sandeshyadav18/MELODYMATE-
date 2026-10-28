@@ -1,0 +1,4 @@
+body { font-family: 'Inter', sans-serif; }
+input:focus { outline: none; box-shadow: 0 0 0 2px #6366f1; }
+button:focus { outline: none; }
+

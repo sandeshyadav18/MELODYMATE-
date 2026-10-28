@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"> <!-- start with dark by default -->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}MelodyMate{% endblock %}</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Enable dark mode support in Tailwind
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen flex flex-col">
+
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800 shadow">
+    <div class="flex items-center space-x-3">
+      <img src="/static/logo.jpeg" alt="MelodyMate Logo" class="w-10 h-10" />
+      <h1 class="text-2xl font-bold text-indigo-400">
+        MelodyMate – <span class="text-indigo-400">Your Musical Bestfriend</span>
+      </h1>
+    </div>
+    <div class="flex space-x-4">
+      <a href="{{ url_for('dashboard') }}" class="hover:text-indigo-400">Home</a>
+      <a href="{{ url_for('profile') }}" class="hover:text-indigo-400">Profile</a>
+      <a href="{{ url_for('my_playlist') }}" class="hover:text-indigo-400">My Playlists</a>
+      <a href="{{ url_for('logout') }}" class="hover:text-red-500">Logout</a>
+      <!-- Dark/Light Toggle -->
+      <button id="theme-toggle" class="px-3 py-1 rounded bg-indigo-500 text-white text-sm">
+        🌙 Dark
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow p-6">
+    {% block content %}
+    <h2 class="text-3xl mb-6 font-semibold">Your Music Library</h2>
+
+    <!-- Music Cards Container -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+      <!-- Example Music Card -->
+      <button
+        class="play-btn flex flex-col items-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow hover:shadow-lg focus:ring-4 focus:ring-indigo-400 transition p-4 cursor-pointer"
+        data-src="/static/music/song1.mp3"
+        data-title="Song Title 1"
+        data-cover="/static/music/cover1.jpg"
+        aria-label="Play Song Title 1"
+      >
+        <img
+          src="/static/music/cover1.jpg"
+          alt="Song Title 1 Cover"
+          class="w-full h-48 object-cover rounded-md mb-3"
+          loading="lazy"
+        />
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate w-full text-center">
+          Song Title 1
+        </h3>
+      </button>
+
+      <button
+        class="play-btn flex flex-col items-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow hover:shadow-lg focus:ring-4 focus:ring-indigo-400 transition p-4 cursor-pointer"
+        data-src="/static/music/song2.mp3"
+        data-title="Song Title 2"
+        data-cover="/static/music/cover2.jpg"
+        aria-label="Play Song Title 2"
+      >
+        <img
+          src="/static/music/cover2.jpg"
+          alt="Song Title 2 Cover"
+          class="w-full h-48 object-cover rounded-md mb-3"
+          loading="lazy"
+        />
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate w-full text-center">
+          Song Title 2
+        </h3>
+      </button>
+
+      <!-- Add more cards similarly -->
+
+    </div>
+    {% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="p-4 bg-gray-200 dark:bg-gray-800 text-center text-sm">
+    <p>&copy; 2025 MelodyMate. All rights reserved.</p>
+  </footer>
+
+  <!-- Theme Toggle -->
+  <script>
+    const toggleBtn = document.getElementById("theme-toggle");
+    const html = document.documentElement;
+
+    // Load theme from localStorage
+    if (localStorage.getItem("theme") === "light") {
+      html.classList.remove("dark");
+      toggleBtn.textContent = "☀️ Light";
+    } else {
+      html.classList.add("dark");
+      toggleBtn.textContent = "🌙 Dark";
+    }
+
+    // Toggle theme
+    toggleBtn.addEventListener("click", () => {
+      if (html.classList.contains("dark")) {
+        html.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+        toggleBtn.textContent = "☀️ Light";
+      } else {
+        html.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+        toggleBtn.textContent = "🌙 Dark";
+      }
+    });
+  </script>
+
+  <!-- Sticky Bottom Music Player -->
+  <div
+    id="player-bar"
+    class="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-lg z-50 space-y-3 sm:space-y-0"
+  >
+    <!-- Cover + Song Info -->
+    <div class="flex items-center space-x-3 w-full sm:w-auto">
+      <img
+        id="player-cover"
+        src="/static/music/default_cover.jpg"
+        alt="Cover"
+        class="w-14 h-14 rounded-md shadow-md object-cover"
+      />
+      <div class="truncate">
+        <h4
+          id="player-title"
+          class="text-sm font-semibold truncate max-w-[180px]"
+          title="No song playing"
+        >
+          No song playing
+        </h4>
+        <p id="player-artist" class="text-xs text-gray-500 dark:text-gray-400 truncate">---</p>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center justify-center space-x-5 w-full sm:w-auto">
+      <button id="prev-btn" class="text-xl text-gray-600 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400 transition">⏮</button>
+      <button id="play-pause-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-full text-sm shadow-md transition">▶</button>
+      <button id="next-btn" class="text-xl text-gray-600 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400 transition">⏭</button>
+      <button id="shuffle-btn" class="text-gray-500 hover:text-green-400 dark:text-gray-400 dark:hover:text-green-400 transition text-xl">🔀</button>
+    </div>
+
+    <!-- Seek bar -->
+    <div class="w-full sm:flex-1">
+      <input type="range" id="seek-bar" value="0" class="w-full h-2 rounded-lg bg-gray-300 dark:bg-gray-700 accent-indigo-500 cursor-pointer" />
+    </div>
+  </div>
+
+  <audio id="audio-player"></audio>
+
+  <!-- Player Script -->
+  <script>
+    const audio = document.getElementById("audio-player");
+    const playPauseBtn = document.getElementById("play-pause-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const shuffleBtn = document.getElementById("shuffle-btn");
+    const seekBar = document.getElementById("seek-bar");
+
+    const playerTitle = document.getElementById("player-title");
+    const playerCover = document.getElementById("player-cover");
+    const playerArtist = document.getElementById("player-artist");
+
+    let playlist = [];
+    let currentIndex = 0;
+    let isPlaying = false;
+    let shuffle = false;
+
+    // Restore saved player state on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      const saved = JSON.parse(localStorage.getItem("playerState"));
+      if (saved) {
+        audio.src = saved.src;
+        playerTitle.textContent = saved.title || "No song playing";
+        playerCover.src = saved.cover || "/static/music/default_cover.jpg";
+        audio.currentTime = saved.time || 0;
+        if (saved.isPlaying) {
+          playSong();
+        }
+      }
+    });
+
+    // Save state
+    function saveState() {
+      localStorage.setItem(
+        "playerState",
+        JSON.stringify({
+          src: audio.src,
+          title: playerTitle.textContent,
+          cover: playerCover.src,
+          time: audio.currentTime,
+          isPlaying: isPlaying,
+        })
+      );
+    }
+
+    // Handle play buttons
+    document.querySelectorAll(".play-btn").forEach((btn, index) => {
+      btn.addEventListener("click", () => {
+        playlist = Array.from(document.querySelectorAll(".play-btn")).map((b) => ({
+          src: b.dataset.src,
+          title: b.dataset.title,
+          cover: b.dataset.cover,
+        }));
+        currentIndex = index;
+        loadSong(currentIndex);
+        playSong();
+      });
+    });
+
+    function loadSong(index) {
+      const song = playlist[index];
+      if (!song) return;
+      audio.src = song.src;
+      playerTitle.textContent = song.title;
+      playerCover.src = song.cover || "/static/music/default_cover.jpg";
+      playerArtist.textContent = song.artist || "---";
+      saveState();
+    }
+
+    function playSong() {
+      if (!audio.src) return;
+      audio.play().catch(err => console.warn("Playback blocked:", err));
+      isPlaying = true;
+      playPauseBtn.textContent = "⏸";
+      saveState();
+    }
+
+    function pauseSong() {
+      audio.pause();
+      isPlaying = false;
+      playPauseBtn.textContent = "▶";
+      saveState();
+    }
+
+    playPauseBtn.addEventListener("click", () => {
+      isPlaying ? pauseSong() : playSong();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (!playlist.length) return;
+      currentIndex = shuffle
+        ? Math.floor(Math.random() * playlist.length)
+        : (currentIndex + 1) % playlist.length;
+      loadSong(currentIndex);
+      playSong();
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (!playlist.length) return;
+      currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+      loadSong(currentIndex);
+      playSong();
+    });
+
+    shuffleBtn.addEventListener("click", () => {
+      shuffle = !shuffle;
+      shuffleBtn.classList.toggle("text-green-400", shuffle);
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      seekBar.value = (audio.currentTime / audio.duration) * 100 || 0;
+      saveState();
+    });
+
+    seekBar.addEventListener("input", () => {
+      audio.currentTime = (seekBar.value / 100) * audio.duration;
+      saveState();
+    });
+
+    audio.addEventListener("ended", () => {
+      nextBtn.click();
+    });
+  </script>
+</body>
+</html>

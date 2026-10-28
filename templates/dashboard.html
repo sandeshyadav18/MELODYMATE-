@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - MelodyMate{% endblock %}
+
+{% block content %}
+
+  <div class="container mx-auto p-6 mb-40">
+    <h2 class="text-xl font-bold mb-4">🎶 Welcome, {{ current_user.username }}</h2>
+
+    <!-- Create Playlist -->
+    <form method="POST" action="{{ url_for('dashboard') }}" class="flex space-x-2 mb-6">
+      <input type="text" name="playlist_name" placeholder="New Playlist Name"
+             class="flex-1 p-2 border rounded !text-black placeholder:!text-black" required>
+      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Create</button>
+    </form>
+
+    <!-- Song Library -->
+    <h3 class="text-lg font-semibold mb-3">🎧 All Songs</h3>
+    <!-- Search Bar -->
+    <input type="text" id="search-bar" placeholder="Search songs..."
+           class="w-full p-2 border rounded mb-4 !text-black placeholder:!text-black">
+
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+      {% for song in songs %}
+      <div class="bg-white rounded-lg shadow p-4 song-card">
+        <img src="{{ song.coverImage }}" class="w-full h-40 object-cover rounded">
+        <h4 class="mt-2 font-bold !text-black song-title">
+          {{ song.title }}
+        </h4>
+
+        <!-- Mood and Genre -->
+        <p class="text-sm text-gray-700">🎵 Genre: {{ song.genre or "Unknown" }}</p>
+        <p class="text-sm text-gray-700">😊 Mood: {{ song.mood or "Neutral" }}</p>
+
+        <!-- Play from Library -->
+        <button class="bg-indigo-600 text-white px-3 py-1 rounded mt-2 play-btn"
+            data-src="{{ song.filePath }}"
+            data-title="{{ song.title }}"
+            data-cover="{{ song.coverImage }}">
+          ▶ Play
+        </button>
+
+        <!-- Download Button -->
+        <a href="{{ url_for('download_song', song_id=song._id) }}" 
+           class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500 mt-1 inline-block">
+          ⬇ Download
+        </a>
+
+        <!-- Add to Playlist -->
+        <form method="POST" action="{{ url_for('add_to_playlist') }}" class="mt-2">
+          <input type="hidden" name="song_id" value="{{ song._id }}">
+          <select name="playlist_id" class="w-full border rounded p-1 mb-2 !text-black">
+            {% for playlist in playlists %}
+            <option value="{{ playlist._id }}">{{ playlist.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="w-full bg-indigo-500 text-white px-2 py-1 rounded">
+            Add to Playlist
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+
+    <script>
+      // Helper: send POST with JSON
+      async function postJSON(url, data) {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        return res;
+      }
+
+      // Song Search Functionality
+      const searchBar = document.getElementById("search-bar");
+      const songCards = document.querySelectorAll(".song-card");
+
+      searchBar.addEventListener("input", () => {
+        const query = searchBar.value.toLowerCase();
+        songCards.forEach(card => {
+          const title = card.querySelector("h4").textContent.toLowerCase();
+          const genre = card.querySelector("p:nth-of-type(1)").textContent.toLowerCase();
+          const mood = card.querySelector("p:nth-of-type(2)").textContent.toLowerCase();
+
+          // search against title, genre, or mood
+          card.style.display =
+            title.includes(query) || genre.includes(query) || mood.includes(query)
+              ? "block"
+              : "none";
+        });
+      });
+    </script>
+{% endblock %}

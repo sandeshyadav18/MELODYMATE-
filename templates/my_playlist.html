@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}My Playlists - MelodyMate{% endblock %}
+
+{% block content %}
+<div class="p-6">
+  <h3 class="text-lg font-semibold mb-3">My Playlists</h3>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for playlist in playlists %}
+    <div class="bg-gray-800 text-white rounded-lg shadow p-4 transition duration-300 hover:shadow-lg">
+      <div class="flex justify-between items-start mb-2">
+        <h4 class="font-bold text-indigo-400">{{ playlist.name }}</h4>
+
+        <div class="flex space-x-2">
+          <!-- Rename -->
+          <button class="rename-btn bg-yellow-500 text-white px-2 py-1 rounded text-sm"
+                  data-playlist-id="{{ playlist._id }}">
+            ✏ Rename
+          </button>
+
+          <!-- Delete -->
+          <button class="delete-btn bg-red-500 text-white px-2 py-1 rounded text-sm"
+                  data-playlist-id="{{ playlist._id }}">
+            🗑 Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- Playlist Songs -->
+      {% if playlist.songs %}
+      <ul class="space-y-2">
+        {% for song in playlist.songs %}
+        <li class="flex items-center justify-between border-b border-gray-600 pb-2">
+          <span class="text-white">{{ song.title }}</span>
+          <div class="flex space-x-2">
+            <!-- Play -->
+            <button class="bg-indigo-600 text-white px-3 py-1 rounded play-btn"
+                    data-src="{{ song.filePath }}"
+                    data-title="{{ song.title }}"
+                    data-cover="{{ song.coverImage }}">
+              ▶ Play
+            </button>
+
+            <!-- Remove -->
+            <form action="/remove_from_playlist" method="POST" class="inline">
+              <input type="hidden" name="playlist_id" value="{{ playlist._id }}">
+              <input type="hidden" name="song_id" value="{{ song._id }}">
+              <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">🗑 Remove</button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-gray-400 text-sm">No songs in this playlist yet.</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+// === Playlist Rename/Delete ===
+async function postJSON(url, data) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  return res;
+}
+
+document.querySelectorAll(".rename-btn").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const playlistId = btn.dataset.playlistId;
+    const newName = prompt("Enter new playlist name:");
+    if (!newName) return;
+
+    const res = await postJSON("/rename_playlist", { playlist_id: playlistId, new_name: newName.trim() });
+    if (res.ok) location.reload();
+    else alert("Rename failed");
+  });
+});
+
+document.querySelectorAll(".delete-btn").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const playlistId = btn.dataset.playlistId;
+    if (!confirm("Delete this playlist?")) return;
+
+    const res = await postJSON("/delete_playlist", { playlist_id: playlistId });
+    if (res.ok) location.reload();
+    else alert("Delete failed");
+  });
+});
+</script>
+{% endblock %}

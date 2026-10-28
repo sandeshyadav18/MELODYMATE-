@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Song</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-gray-800 p-8 rounded-xl shadow w-96">
+            <h2 class="text-2xl font-bold mb-6">🎵 Edit Song</h2>
+            <form action="/admin/edit_song/{{ song._id }}" method="POST" enctype="multipart/form-data">
+                <label>Title</label>
+                <input type="text" name="title" value="{{ song.title }}" class="w-full mb-3 text-black" required>
+
+                <label>Artist</label>
+                <input type="text" name="artist" value="{{ song.artist }}" class="w-full mb-3 text-black" required>
+
+                <label>Genre</label>
+                <input type="text" name="genre" value="{{ song.genre }}" class="w-full mb-3 text-black">
+
+                <label>Mood</label>
+                <input type="text" name="mood" value="{{ song.mood }}" class="w-full mb-3 text-black">
+
+                <label>Cover Image</label>
+                <input type="file" name="cover" class="w-full mb-4">
+
+                <button type="submit" class="w-full bg-green-600 py-2 rounded">Save Changes</button>
+            </form>
+
+            <a href="/admin/songs" class="block text-center mt-4 text-gray-400 hover:text-white">⬅ Back</a>
+        </div>
+    </div>
+</body>
+</html>
